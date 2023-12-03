@@ -46,16 +46,15 @@ public abstract class SolutionBase
 
     SolutionResult Solve(Func<string> SolverFunction)
     {
-        if (Debug)
+        if (Debug && string.IsNullOrEmpty(DebugInput))
         {
-            if (string.IsNullOrEmpty(DebugInput))
-            {
-                throw new Exception("DebugInput is null or empty");
-            }
+            Console.WriteLine("Debug Input is null or empty");
+            return SolutionResult.Empty;
         }
         else if (string.IsNullOrEmpty(Input))
         {
-            throw new Exception("Input is null or empty");
+            Console.WriteLine("Input is null or empty");
+            return SolutionResult.Empty;
         }
 
         try
@@ -83,12 +82,11 @@ public abstract class SolutionBase
 
     string LoadInput(bool debug = false)
     {
-        var inputFilepath =
-            $"./AdventOfCode.Solutions/Year{Year}/Day{Day:D2}/{(debug ? "debug" : "input")}";
+        string INPUT_FILEPATH = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, $"../../../AdventOfCode.Solutions/Year{Year}/Day{Day:D2}/{(debug ? "debug" : "input")}"));
 
-        if (File.Exists(inputFilepath) && new FileInfo(inputFilepath).Length > 0)
+        if (File.Exists(INPUT_FILEPATH) && new FileInfo(INPUT_FILEPATH).Length > 0)
         {
-            return File.ReadAllText(inputFilepath);
+            return File.ReadAllText(INPUT_FILEPATH);
         }
 
         if (debug) return "";
@@ -96,8 +94,22 @@ public abstract class SolutionBase
         try
         {
             var input = InputService.FetchInput(Year, Day).Result;
-            File.WriteAllText(inputFilepath, input);
+            File.WriteAllText(INPUT_FILEPATH, input);
             return input;
+        }
+        catch (AggregateException)
+        {
+            var colour = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine($"Day {Day}: Cannot fetch puzzle input before given date (Eastern Standard Time).");
+            Console.ForegroundColor = colour;
+        }
+        catch (InvalidOperationException)
+        {
+            var colour = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine($"Day {Day}: Cannot fetch puzzle input before given date (Eastern Standard Time).");
+            Console.ForegroundColor = colour;
         }
         catch (HttpRequestException e)
         {
@@ -120,13 +132,7 @@ public abstract class SolutionBase
             }
             Console.ForegroundColor = colour;
         }
-        catch (InvalidOperationException)
-        {
-            var colour = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine($"Day {Day}: Cannot fetch puzzle input before given date (Eastern Standard Time).");
-            Console.ForegroundColor = colour;
-        }
+
 
         return "";
     }
@@ -137,7 +143,7 @@ public abstract class SolutionBase
         + $"{ResultToString(2, Part2)}";
 
     string ResultToString(int part, SolutionResult result) =>
-        $"  - Part{part} => " + (string.IsNullOrEmpty(result.Answer) 
+        $"  - Part{part} => " + (string.IsNullOrEmpty(result.Answer)
             ? "Unsolved"
             : $"{result.Answer} ({result.Time.TotalMilliseconds}ms)");
 
