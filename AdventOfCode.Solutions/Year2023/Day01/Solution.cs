@@ -41,9 +41,9 @@ class Solution : SolutionBase
     {
         List<string> lines = Input.Split("\n").ToList().Where(s => !string.IsNullOrEmpty(s)).ToList();
         List<CalVal> calVals = new List<CalVal>();
-
         try
         {
+            calVals = new List<CalVal>();
             foreach (string line in lines)
             {
                 calVals.Add(Parse(line, true));
@@ -73,9 +73,7 @@ class Solution : SolutionBase
 
     private string Refactor(string input)
     {
-        //oneight (1ight)
-        //eightwo (8wo)
-        return input.ToLower().Replace("oneight", "1ight").Replace("eightwo", "8wo").Replace("twone", "2").Replace("one", "1").Replace("two", "2").Replace("three", "3").Replace("four", "4").Replace("five", "5").Replace("six", "6").Replace("seven", "7").Replace("eight", "8").Replace("nine", "9");
+        return input.ToLower().Replace("one", "o1ne").Replace("two", "t2wo").Replace("three", "t3hree").Replace("four", "f4our").Replace("five", "f5ive").Replace("six", "s6ix").Replace("seven", "s7even").Replace("eight", "e8ight").Replace("nine", "n9ine");
     }
 
     private CalVal Parse(string line, bool refactor)
