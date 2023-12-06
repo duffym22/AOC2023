@@ -42,7 +42,30 @@ class Solution : SolutionBase
 
     protected override string SolvePartTwo()
     {
-        return "";
+        lines = Input.Split("\n").ToList().Where(s => !string.IsNullOrEmpty(s)).ToList();
+        List<Card> cards;
+        ParseCards(lines, out cards);
+
+        Dictionary<int, int> cardsWon = new Dictionary<int, int>();
+        Dictionary<int, int> cardInstances = new Dictionary<int, int>();
+        cards.ForEach(x => cardsWon.Add(x.ID, x.CardCopiesWon));
+        cards.ForEach(x => cardInstances.Add(x.ID, 1));
+
+        for (int i = 1; i < cardsWon.Keys.Count - 1; i++)
+        {
+            int incr = cardsWon[i];
+            int idx;
+            //Count as many times up as the value unless it goes out of bounds
+            for (int j = 0; j < incr; j++)
+            {
+                idx = i + 1 + j;
+                if(idx <= cardsWon.Keys.Count)
+                    cardInstances[idx]++;
+            }
+        }
+
+        //This is not it - it doesn't cascade to account for newly added cards during processing
+        return cardInstances.Values.Sum().ToString();
     }
 }
 
@@ -52,6 +75,7 @@ class Card
     public List<int> WinningNumbers { get; set; }
     public List<int> GameNumbers { get; set; }
     public int Points { get { return (int)(WinningNumbers.Intersect(GameNumbers).Count() == 0 ? 0 : Math.Pow(2, WinningNumbers.Intersect(GameNumbers).Count() - 1)); } }
+    public int CardCopiesWon { get { return WinningNumbers.Intersect(GameNumbers).Count(); } }
 
     public Card(int id, List<int> win, List<int> game)
     {
