@@ -89,8 +89,6 @@ public abstract class SolutionBase
             return File.ReadAllText(INPUT_FILEPATH);
         }
 
-        if (debug) return "";
-
         try
         {
             var input = InputService.FetchInput(Year, Day).Result;
