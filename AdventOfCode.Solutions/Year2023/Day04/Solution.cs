@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using System.Net;
 
 namespace AdventOfCode.Solutions.Year2023.Day04;
@@ -6,7 +7,7 @@ namespace AdventOfCode.Solutions.Year2023.Day04;
 class Solution : SolutionBase
 {
     List<string> lines = new List<string>();
-    public Solution() : base(04, 2023, "", true) { }
+    public Solution() : base(04, 2023, "" ) { }
 
     protected override string SolvePartOne()
     {
@@ -46,58 +47,56 @@ class Solution : SolutionBase
         List<Card> cards;
         ParseCards(lines, out cards);
 
-        Dictionary<int, int> ogCards = new Dictionary<int, int>();
-        cards.ForEach(x => ogCards.Add(x.ID, x.CardCopiesWon));
+        List<int> ogCards = new List<int>();
+        cards.ForEach(x => ogCards.Add(x.CardCopiesWon));
 
         //Dictionary
         //  Key: Card Number
         //  Value: Count of card copies (not including originals)
-        Dictionary<int, int> copyCards = new Dictionary<int, int>();
+        List <int> copyCards = new List<int>();
 
-        foreach (int key in ogCards.Keys)
+        foreach (int cardID in ogCards)
         {
-            //Initialize the dictionary with a count of 0 
-            copyCards.Add(key, 0);
+            //Initialize the list X times with a count of 0 
+            copyCards.Add(0);
         }
 
         /// Order of Operations
         ///     1. Process current card and increase/add card copy counts
         ///     2. Process card copies
         ///     3. Go to next card
-        for (int i = ogCards.Keys.First(); i <= ogCards.Keys.Count; i++)
+        for (int i = 0; i < ogCards.Count; i++)
         {
             // 1. Process current card
-            ProcessCard(i, ref ogCards, ref copyCards);
+            ProcessCard(i, ogCards[i], ogCards.Count, ref copyCards);
 
             // 2. Process EACH card copies (if any)
             for (int j = 0; j < copyCards[i]; j++)
             {
-                ProcessCard(i, ref ogCards, ref copyCards);
+                ProcessCard(i, ogCards[i], ogCards.Count, ref copyCards);
             }
         }
 
         //Attempt 1: 2410 (too low)
-        return (ogCards.Sum(x => x.Value) + copyCards.Sum(x => x.Value)).ToString();
+        //Attempt 2: 8063216 - CORRECT
+        return (ogCards.Count + copyCards.Sum(x => x)).ToString();
     }
 
-    //Returns 
-    private void ProcessCard(int currentCardID, ref Dictionary<int, int> cardsWon, ref Dictionary<int, int> cardCopies)
+    private void ProcessCard(int currentCardID, int ogCopiesWon, int ogMaxCards, ref List<int> copyCards)
     {
-        int copiesWon = cardsWon[currentCardID];
-        int range = currentCardID + copiesWon;
+        int range = currentCardID + ogCopiesWon;
 
         // 1.1 Add card copy counts
         // Range check to make sure we dont go past the total number of cards
-        // Current Position + Card Copes <= Max cards = Safe to process cards up to the number of card copies won
-        // Current Position + Card Copes > Max cards = Stop processing cards at max card count
-        int limit = range <= cardsWon.Keys.Count ? range : cardsWon.Keys.Count;
+        // Current Position + Card Copies > Max cards = Stop processing cards at max card count
+        // Current Position + Card Copies <= Max cards = Safe to process cards up to the number of card copies won
+        int limit = range > ogMaxCards ? ogMaxCards : range;
 
         for (int j = currentCardID + 1; j <= limit; j++)
         {
-            cardCopies[j]++;
+            copyCards[j]++;
         }
     }
-
 }
 
 class Card
@@ -115,17 +114,3 @@ class Card
         GameNumbers = game;
     }
 }
-
-
-//for (int i = 1; i < cardsWon.Keys.Count - 1; i++)
-//{
-//    int incr = cardsWon[i];
-//    int idx;
-//    //Count as many times up as the value unless it goes out of bounds
-//    for (int j = 0; j < incr; j++)
-//    {
-//        idx = i + 1 + j;
-//        if (idx <= cardsWon.Keys.Count)
-//            cardInstances[idx]++;
-//    }
-//}
